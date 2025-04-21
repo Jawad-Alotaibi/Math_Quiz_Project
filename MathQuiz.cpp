@@ -1,3 +1,5 @@
+//Math Quiz Project 
+//Author Jawad Alotaibi
 #include <iostream> 
 #include <cstdlib>
 
