@@ -1,106 +1,216 @@
-//Math Quiz Project 
-//Author Jawad Alotaibi
-#include <iostream> 
-#include <cstdlib>
+#include <iostream>   // Include iostream for input/output operations.
+#include <cstdlib>    // Include cstdlib for system functions like clearing the screen.
+#include <ctime>      // Include ctime for random number seeding.
+using namespace std;  // Use the standard namespace to avoid prefixing std:: before standard functions.
 
-using namespace std;
+// Enumeration: enQuestionsLevel
+// Purpose: Defines the difficulty levels available for quiz questions.
+enum enQuestionsLevel { EasyLevel = 1, MedLevel = 2, HardLevel = 3, Mix = 4 };
 
-enum enQuestionLevel {Easy = 1, Mid = 2 , Hard = 3 , Random = 4};
-enum enOperationType {Add = 1, Sub = 2 , Mul = 3, Div = 4 , Mix = 5};
+// Enumeration: enOperationType
+// Purpose: Defines the types of arithmetic operations used in the quiz.
+enum enOperationType { Add = 1, Sub = 2, Mult = 3, Div = 4, MixOp = 5 };
 
-struct stQuiz {
-
-    int NumberOfQuestions;
-    enQuestionLevel QuestionLevel;
-    enOperationType OperationType;
-    int NumberOfRightAnswer;
-    int NumberOfWrongAnswer;
-};
-
-void ResetScreen()
+// Function: RandomNumber
+// Purpose: Generates a random number within the given range [From, To].
+// Parameters:
+//   - From: Lower bound of the random range.
+//   - To: Upper bound of the random range.
+// Returns: A random integer between From and To.
+int RandomNumber(int From, int To)
 {
-    system("cls");
-    system("color 0F");
+    return rand() % (To - From + 1) + From;
 }
 
-int ReadNumber(string message)
+int ReadPositiveNumber(string message)
 {
-    int Number = 0;
+    int number = 0;
 
+   
     do
     {
-        cout << message;
-        cin >> Number;
-    } while (Number < 0);
+        cout << message << endl;
+        cin >> number;
+    }while(number <= 0);
 
-
-    return Number;
+    return number;
 }
 
-int RandomNumber(int from, int to)
+// Function: GetOpTypeSymbol
+// Purpose: Converts an operation type to its corresponding symbol.
+// Parameters:
+//   - OpType: The arithmetic operation type.
+// Returns: A string representation of the operator.
+string GetOpTypeSymbol(enOperationType OpType)
 {
-    int randomNumber = 0;
-
-    randomNumber = rand() % (to - from + 1) + from;
-    return randomNumber;
+    switch (OpType)
+    {
+    case enOperationType::Add:
+        return "+";
+    case enOperationType::Sub:
+        return "-";
+    case enOperationType::Mult:
+        return "x";
+    case enOperationType::Div:
+        return "/";
+    default:
+        return "Mix";
+    }
 }
 
-void GetEasyQuestion(int &num1 , int &num2)
+// Function: GetRandomOperationType
+// Purpose: Generates a random arithmetic operation type.
+// Returns: A random enOperationType value.
+enOperationType GetRandomOperationType()
 {
-    num1 = RandomNumber(1, 9);
-    num2 = RandomNumber(1, 9);
+    return (enOperationType)RandomNumber(1, 4);
 }
 
-
-void GetMidQuestion(int &num1 , int &num2)
+// Function: GetQuestionLevelText
+// Purpose: Converts an enQuestionsLevel enum to a string representation.
+// Parameters:
+//   - QuestionLevel: The selected difficulty level.
+// Returns: A string representation of the difficulty level.
+string GetQuestionLevelText(enQuestionsLevel QuestionLevel)
 {
-    num1 = RandomNumber(15, 30);
-    num2 = RandomNumber(1, 15);
+    string arrQuestionLevelText[4] = { "Easy","Medium","Hard","Mixed" };
+    return arrQuestionLevelText[QuestionLevel - 1];
 }
 
-
-void GetHardQuestion(int &num1 , int &num2)
+// Function: SetScreenColor
+// Purpose: Changes the console screen color based on answer correctness.
+// Parameters:
+//   - Right: Boolean value indicating if the answer is correct.
+void SetScreenColor(bool Right)
 {
-    num1 = RandomNumber(25, 50);
-    num2 = RandomNumber(1, 25);
+    if (Right)
+    {
+        
+        system("color 2F"); // Turn screen to green
+
+    }
+    else
+    {
+        
+        system("color 4F");
+    }
 }
 
-int Addition(int num1, int num2)
+// Function: SimpleCalculator
+// Purpose: Performs the selected arithmetic operation on two numbers.
+// Parameters:
+//   - Number1: First operand.
+//   - Number2: Second operand.
+//   - OpType: The operation type (Add, Sub, Mult, or Div).
+// Returns: The result of the operation.
+int SimpleCalculator(int Number1, int Number2, enOperationType OpType)
 {
-    cout << num1 << "\n" << num2 << "+\n" << "---------------------------------------";
-    return (num1 + num2);
+    switch (OpType)
+    {
+    case enOperationType::Add:
+        return Number1 + Number2;
+    case enOperationType::Sub:
+        return Number1 - Number2;
+    case enOperationType::Mult:
+        return Number1 * Number2;
+    case enOperationType::Div:
+        return (Number2 != 0) ? (Number1 / Number2) : 0;  // Avoid division by zero.
+    default:
+        return Number1 + Number2;
+    }
 }
 
-int Subtraction(int num1, int num2)
+// Structure: stQuestion
+// Purpose: Stores information for a single quiz question.
+struct stQuestion
 {
-    cout << num1 << "\n" << num2 << "-\n" << "---------------------------------------";
-    return (num1 - num2);
-}
+    int Number1 = 0;
+    int Number2 = 0;
+    enOperationType OperationType;
+    enQuestionsLevel QuestionLevel;
+    int CorrectAnswer = 0;
+    int PlayerAnswer = 0;
+    bool AnswerResult = false;
+};
 
-int Multiplication(int num1 , int num2)
+// Structure: stQuizz
+// Purpose: Stores details of the entire quiz session.
+struct stQuizz
 {
-    cout << num1 << "\n" << num2 << "X\n" << "---------------------------------------";
-    return (num1 * num2);
-}
+    stQuestion QuestionList[100];
+    short NumberOfQuestions;
+    enQuestionsLevel QuestionsLevel;
+    enOperationType OpType;
+    short NumberOfWrongAnswers = 0;
+    short NumberOfRightAnswers = 0;
+    bool isPass = false;
+};
 
-int Division(int num1, int num2)
+// Function: GenerateQuestion
+// Purpose: Creates a random math question based on difficulty and operation type.
+stQuestion GenerateQuestion(enQuestionsLevel QuestionLevel, enOperationType OpType)
 {
-    cout << num1 << "\n" << num2 << "/\n" << "---------------------------------------";
-    return (num1, num2);
+    stQuestion Question;
+
+    if (QuestionLevel == enQuestionsLevel::Mix)
+        QuestionLevel = (enQuestionsLevel)RandomNumber(1, 3);
+
+    if (OpType == enOperationType::MixOp)
+        OpType = GetRandomOperationType();
+
+    Question.OperationType = OpType;
+
+    switch (QuestionLevel)
+    {
+    case enQuestionsLevel::EasyLevel:
+        Question.Number1 = RandomNumber(1, 10);
+        Question.Number2 = RandomNumber(1, 10);
+        break;
+    case enQuestionsLevel::MedLevel:
+        Question.Number1 = RandomNumber(10, 50);
+        Question.Number2 = RandomNumber(10, 50);
+        break;
+    case enQuestionsLevel::HardLevel:
+        Question.Number1 = RandomNumber(50, 100);
+        Question.Number2 = RandomNumber(50, 100);
+        break;
+    }
+
+    Question.CorrectAnswer = SimpleCalculator(Question.Number1, Question.Number2, Question.OperationType);
+    Question.QuestionLevel = QuestionLevel;
+
+    return Question;
 }
 
-
-enQuestionLevel GetQuestionLevel()
+// Function: AskAndCorrectQuestionListAnswers
+// Purpose: Iterates through quiz questions, evaluates answers, and provides feedback.
+void AskAndCorrectQuestionListAnswers(stQuizz& Quizz)
 {
-    int NumOfQuestionLevel = 0;
+    for (short QuestionNumber = 0; QuestionNumber < Quizz.NumberOfQuestions; QuestionNumber++)
+    {
+        cout << "\nQuestion [" << QuestionNumber + 1 << "/" << Quizz.NumberOfQuestions << "]\n";
+        cout << Quizz.QuestionList[QuestionNumber].Number1 << " "
+            << GetOpTypeSymbol(Quizz.QuestionList[QuestionNumber].OperationType) << " "
+            << Quizz.QuestionList[QuestionNumber].Number2 << " = ";
 
-    cout << "Enter Question Level [1] Easy, [2] Mid, [3] Hard, [4] Mix ? ";
-    cin >> NumOfQuestionLevel;
+        cin >> Quizz.QuestionList[QuestionNumber].PlayerAnswer;
 
-    return (enQuestionLevel) NumOfQuestionLevel;
+        if (Quizz.QuestionList[QuestionNumber].PlayerAnswer == Quizz.QuestionList[QuestionNumber].CorrectAnswer)
+        {
+            cout << "Correct!\n";
+            Quizz.NumberOfRightAnswers++;
+        }
+        else
+        {
+            cout << "Wrong! Correct Answer: " << Quizz.QuestionList[QuestionNumber].CorrectAnswer << endl;
+            Quizz.NumberOfWrongAnswers++;
+        }
+    }
+
+    Quizz.isPass = (Quizz.NumberOfRightAnswers >= Quizz.NumberOfWrongAnswers);
 }
 
-enOperationType GetOperatioNType()
+enOperationType GetOperationType()
 {
     int operationType = 0;
 
@@ -110,142 +220,72 @@ enOperationType GetOperatioNType()
     return (enOperationType) operationType;
 }
 
-int GetQuesion(enOperationType OperationType , enQuestionLevel QuestionLevel)
+enQuestionsLevel GetQuestionLevel()
 {
-    int num1 = 0 , num2 = 0;
+    int NumOfQuestionLevel = 0;
 
-    if(QuestionLevel == enQuestionLevel::Random)
+    cout << "Enter Question Level [1] Easy, [2] Mid, [3] Hard, [4] Mix ? ";
+    cin >> NumOfQuestionLevel;
+
+    return (enQuestionsLevel) NumOfQuestionLevel;
+}
+
+string GetResult(bool result)
+{
+    if(result)
     {
-        QuestionLevel = enQuestionLevel(RandomNumber(1,3));
+       return "PASS\n";
     }
-
-    switch(QuestionLevel)
-    {
-      case enQuestionLevel::Easy:
-            GetEasyQuestion(num1 , num2);
-            break;
-
-        case enQuestionLevel::Mid:
-            GetMidQuestion(num1, num2);
-            break;
-
-        case enQuestionLevel::Hard:
-            GetHardQuestion(num1, num2);
-            break;
-    }
-
-        if(OperationType == enOperationType::Mix)
-        {
-            OperationType = enOperationType(RandomNumber(1,4));
-        }
-    switch(OperationType)
-    {
-        case enOperationType::Add:
-          return  Addition(num1, num2);
-            break;
+    else
+         return "FAIL\n";
         
-        case enOperationType::Sub:
-           return Subtraction(num1, num2);
-            break;
-        
-            case enOperationType::Mul:
-               return Multiplication(num1, num2);
-                break;
-            
-        case enOperationType::Div:
-            return Division(num1, num2);
-            break;
-    }
-
-}
-
-stQuiz FillFinalResult(int numberOfQuestions, enQuestionLevel QuestionLevel , enOperationType OperationType, int RightAnswer, int WrongAnswer)
-{
-    stQuiz Quiz;
-    Quiz.NumberOfQuestions = numberOfQuestions;
-    Quiz.NumberOfRightAnswer = RightAnswer;
-    Quiz.NumberOfWrongAnswer = WrongAnswer;
-    Quiz.OperationType = OperationType;
-    Quiz.QuestionLevel = QuestionLevel;
-
-    return Quiz;
+    return "Unexpected Behaviour occur\n";
 }
 
 
-string GetLevelName(enQuestionLevel QuestionLevel)
-{
-    string Levels[] = {"Easy", "Mid", "Hard","Mix"};
 
-    return Levels[QuestionLevel -1];
-}
-
-string GetOperatioNName(enOperationType OpType)
-{
-    string OperationsType[] = {"Addition", "Subtraction", "Multiplication", "Div", "Mix"};
-
-    return OperationsType[OpType - 1];
-}
-
-
-stQuiz MathQuiz(int numberOfQuestions)
-{
-    stQuiz Quiz;
-    int numOfRightAnswer = 0 , numOfWrongAnswer = 0, answer = 0 , userAnswer = 0;
-
-   enQuestionLevel QuestionLevel = GetQuestionLevel();
-   enOperationType OperationType = GetOperatioNType();
-
-    for(int currentQuestion = 1; currentQuestion <= numberOfQuestions; currentQuestion++)
-    {
-        cout << "Question " << "[" << currentQuestion << "/" << numberOfQuestions << "]\n\n";
-        answer = GetQuesion(OperationType, QuestionLevel);
-        cout << endl;
-        cin >> userAnswer;
-
-        if(userAnswer == answer)
-        {
-            system("color 2F"); // Turn screen to green
-            cout << "Right answer (:\n";
-            numOfRightAnswer++;
-        }
-        else
-        {
-            system("color 4F"); // Turn screen to red
-            cout << "Wrong answer The Rigth answer is: " << answer << "\n";
-            numOfWrongAnswer++;
-
-        }
-    }
-
-   return FillFinalResult(numberOfQuestions, QuestionLevel , OperationType, numOfRightAnswer, numOfWrongAnswer);
-
-}
-//stopped here i need to build final result dashboard
-void ShowFinalResult(stQuiz QuizResult)
+void ShowFinalResult(stQuizz QuizResult)
 {
     cout << "----------------------------------------------------\n";
-        if(QuizResult.NumberOfRightAnswer > QuizResult.NumberOfWrongAnswer)
-        {
-            cout << "\tFinal Result is Pass\n";
-        }
-        else
-        {
-            cout << "\tFinal Result is Fail\n";
-        }
-
-        cout << "----------------------------------------------------\n\n";
+    cout << "Final result is " << GetResult(QuizResult.isPass);
+    cout << "----------------------------------------------------\n\n";
 
 
         cout << "Number Of Questions    : " << QuizResult.NumberOfQuestions << endl;
-        cout << "Question Level         : " << GetLevelName(QuizResult.QuestionLevel) << endl; 
-        cout << "Operation Type         : " << GetOperatioNName(QuizResult.OperationType) << endl;
-        cout << "Number Of Right answer : " << QuizResult.NumberOfRightAnswer << endl;
-        cout << "Number Of Wrong answer : " << QuizResult.NumberOfWrongAnswer << endl;
+        cout << "Question Level         : " << GetQuestionLevelText(QuizResult.QuestionsLevel) << endl; 
+        cout << "Operation Type         : " << GetOpTypeSymbol(QuizResult.OpType) << endl;
+        cout << "Number Of Right answer : " << QuizResult.NumberOfRightAnswers << endl;
+        cout << "Number Of Wrong answer : " << QuizResult.NumberOfWrongAnswers << endl;
 
         cout << "----------------------------------------------------\n\n";
 
 
 }
+
+// Function: PlayMathGame
+// Purpose: Initializes the quiz, generates questions, and manages the quiz flow.
+void PlayMathGame()
+{
+    stQuizz Quizz;
+    Quizz.NumberOfQuestions = ReadPositiveNumber("How many questions do you want ? ");  // Set a fixed number of questions.
+    Quizz.QuestionsLevel = GetQuestionLevel();
+    Quizz.OpType = GetOperationType();
+
+    for (short QuestionNumber = 0; QuestionNumber < Quizz.NumberOfQuestions; QuestionNumber++)
+    {
+        Quizz.QuestionList[QuestionNumber] = GenerateQuestion(Quizz.QuestionsLevel, Quizz.OpType);
+    }
+
+    AskAndCorrectQuestionListAnswers(Quizz);
+     ShowFinalResult(Quizz);
+     if(Quizz.isPass)
+     {
+        system("color 2F");
+     }
+
+}
+
+
 
 
 void StartQuiz()
@@ -253,21 +293,20 @@ void StartQuiz()
     char PlayAgain = 'y';
     do
     {
-        ResetScreen();
-        stQuiz QuizResult = MathQuiz(ReadNumber("How Many Questions do you want to answer? "));
-        ShowFinalResult(QuizResult);
+        PlayMathGame();
+       
 
         cout << "\nDo you want to play again ? ";
         cin >> PlayAgain;
 
         
     } while (tolower(PlayAgain) == 'y');
-    
-    
 }
+
+// Main Function
 int main()
 {
-    StartQuiz();
-    ResetScreen();
-    return 0;
+    srand((unsigned)time(NULL));  // Seed the random number generator.
+    StartQuiz();  // Start the quiz game.
+    return 0;  // Exit the program successfully.
 }
