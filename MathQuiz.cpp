@@ -77,24 +77,6 @@ string GetQuestionLevelText(enQuestionsLevel QuestionLevel)
     return arrQuestionLevelText[QuestionLevel - 1];
 }
 
-// Function: SetScreenColor
-// Purpose: Changes the console screen color based on answer correctness.
-// Parameters:
-//   - Right: Boolean value indicating if the answer is correct.
-void SetScreenColor(bool Right)
-{
-    if (Right)
-    {
-        
-        system("color 2F"); // Turn screen to green
-
-    }
-    else
-    {
-        
-        system("color 4F");
-    }
-}
 
 // Function: SimpleCalculator
 // Purpose: Performs the selected arithmetic operation on two numbers.
@@ -307,6 +289,7 @@ void StartQuiz()
 int main()
 {
     srand((unsigned)time(NULL));  // Seed the random number generator.
+
     StartQuiz();  // Start the quiz game.
     return 0;  // Exit the program successfully.
 }
